@@ -31,6 +31,30 @@
 
 **Videos Downloader** is a full-stack automation platform that discovers, downloads, processes, and uploads viral short-form videos. It supports multiple source platforms and automates the entire content pipeline from URL to TikTok upload with a single click.
 
+### How it works
+
+<p align="center">
+  <img src="docs/images/pipeline-flow.png" alt="Automated Video Pipeline" width="100%">
+</p>
+
+## Screenshots
+
+<details>
+<summary><strong>Dashboard</strong> — Main processing interface</summary>
+<br>
+<p align="center">
+  <img src="docs/images/dashboard-main.png" alt="Dashboard" width="100%">
+</p>
+</details>
+
+<details>
+<summary><strong>API Documentation</strong> — FastAPI Swagger UI</summary>
+<br>
+<p align="center">
+  <img src="docs/images/api-docs.png" alt="API Documentation" width="100%">
+</p>
+</details>
+
 ## Features
 
 ### Multi-Platform Download
