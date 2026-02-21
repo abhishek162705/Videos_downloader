@@ -1,0 +1,43 @@
+# Web Framework
+fastapi
+uvicorn[standard]
+python-multipart
+jinja2
+
+# Video Download
+yt-dlp
+
+# Video Processing
+moviepy
+opencv-python
+pillow
+numpy
+
+# Audio Transcription (Whisper AI) - Opcional, comentar si no se usa
+# openai-whisper
+# torch
+# torchaudio
+
+# Browser Automation
+playwright
+selenium
+
+# Utilities
+python-dotenv
+requests
+aiofiles
+aiohttp
+pydantic
+pydantic-settings
+
+# Progress Bars
+tqdm
+
+# Database
+# SQLite viene incluido con Python
+
+# Scheduling (para backups automáticos)
+schedule
+
+# OpenAI (opcional para generación de descripciones)
+# openai

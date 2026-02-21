@@ -1,0 +1,67 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv
+.venv
+env
+.env
+*.egg-info
+.eggs
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# Build
+*.log
+*.tmp
+
+# Frontend (se construye en su propio Dockerfile)
+frontend/node_modules
+frontend/.next
+frontend/out
+
+# Archivos grandes/temporales
+downloads/*
+processed/*
+temp/*
+cache/*
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# Bases de datos (se montan como volúmenes)
+*.db
+
+# Cookies (se montan como volúmenes)
+cookies/*
+
+# Backups
+backups
+
+# Test
+test_*.py
+*_test.py
+tests/
+
+# Documentation
+*.md
+!README.md
+docs/
+CONTRIBUTING.md
+CHANGELOG.md
+LICENSE
+
+# OS
+.DS_Store
+Thumbs.db

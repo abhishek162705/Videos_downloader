@@ -1,0 +1,486 @@
+"use client"
+
+import React, { useState, useEffect, useRef, useCallback, memo, useMemo } from "react"
+import { Dithering } from "@paper-design/shaders-react"
+import { InputSection } from "./input-section"
+import { OutputSection } from "./output-section"
+import { ProcessingHistory } from "./processing-history"
+import { ToastNotification } from "./toast-notification"
+import { DiscoverSection } from "./discover-section"
+import { api, ProcessingOptions, VideoInfo, FileInfo } from "@/lib/api"
+import { Zap, Compass, Video } from "lucide-react"
+import { cn } from "@/lib/utils"
+
+const MemoizedDithering = memo(Dithering)
+
+export interface ProcessingJob {
+  id: string
+  status: "pending" | "processing" | "complete" | "error"
+  url: string
+  platform: string
+  title: string
+  progress: number
+  message: string
+  result?: {
+    videoPath?: string
+    transcription?: string
+  }
+  error?: string
+  createdAt: Date
+}
+
+export function ViralAutomation() {
+  const [url, setUrl] = useState("")
+  const [description, setDescription] = useState("")
+  const [videoInfo, setVideoInfo] = useState<VideoInfo | null>(null)
+  const [previewLoading, setPreviewLoading] = useState(false)
+
+  // Processing options
+  const [reframe, setReframe] = useState(true)
+  const [backgroundType, setBackgroundType] = useState<"blur" | "solid">("blur")
+  const [backgroundColor, setBackgroundColor] = useState("#000000")
+  const [applyMirror, setApplyMirror] = useState(true)
+  const [applySpeed, setApplySpeed] = useState(true)
+  const [generateSubtitles, setGenerateSubtitles] = useState(true)
+  const [subtitleLanguage, setSubtitleLanguage] = useState("es")
+  const [burnSubtitles, setBurnSubtitles] = useState(true)
+
+  // Jobs history
+  const [jobs, setJobs] = useState<ProcessingJob[]>([])
+  const [selectedJobId, setSelectedJobId] = useState<string | null>(null)
+  const [transcription, setTranscription] = useState("")
+
+  // Files
+  const [downloadedFiles, setDownloadedFiles] = useState<FileInfo[]>([])
+  const [processedFiles, setProcessedFiles] = useState<FileInfo[]>([])
+
+  // UI state
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null)
+  const [leftWidth, setLeftWidth] = useState(50)
+  const [isResizing, setIsResizing] = useState(false)
+  const [isLargeScreen, setIsLargeScreen] = useState(false)
+  const [activeTab, setActiveTab] = useState<"process" | "discover">("process")
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Handle screen size detection after mount to avoid hydration mismatch
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsLargeScreen(window.innerWidth >= 1280)
+    }
+    checkScreenSize()
+    window.addEventListener('resize', checkScreenSize)
+    return () => window.removeEventListener('resize', checkScreenSize)
+  }, [])
+
+  const selectedJob = jobs.find((j) => j.id === selectedJobId) || jobs[0]
+  const processingCount = jobs.filter((j) => j.status === "processing").length
+  const isProcessing = processingCount > 0
+  const canAddMore = processingCount < 5 // Allow up to 5 concurrent jobs
+
+  const showToast = useCallback((message: string, type: "success" | "error" = "success") => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }, [])
+
+  // Fetch files
+  const fetchFiles = useCallback(async () => {
+    try {
+      const [downloads, processed] = await Promise.all([
+        api.getDownloadedFiles(),
+        api.getProcessedFiles(),
+      ])
+      setDownloadedFiles(downloads.files)
+      setProcessedFiles(processed.files)
+    } catch (error) {
+      console.error("Error fetching files:", error)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchFiles()
+    const interval = setInterval(fetchFiles, 10000)
+    return () => clearInterval(interval)
+  }, [fetchFiles])
+
+  // Preview video
+  const handlePreview = useCallback(async () => {
+    if (!url.trim()) return
+
+    setPreviewLoading(true)
+    try {
+      const info = await api.getVideoInfo(url)
+      setVideoInfo(info)
+      if (info.success) {
+        showToast("Video info loaded", "success")
+      }
+    } catch (error: any) {
+      showToast(error.message || "Failed to get video info", "error")
+    } finally {
+      setPreviewLoading(false)
+    }
+  }, [url, showToast])
+
+  // Process video - supports adding multiple videos to queue
+  const handleProcess = useCallback(async (autoUpload: boolean = false) => {
+    if (!url.trim()) {
+      showToast("Please enter a video URL", "error")
+      return
+    }
+
+    if (autoUpload && !description.trim()) {
+      showToast("Please add a description for TikTok", "error")
+      return
+    }
+
+    if (!canAddMore) {
+      showToast("Max 5 videos processing at once. Wait for one to finish.", "error")
+      return
+    }
+
+    const jobId = `job_${Date.now()}`
+    const currentUrl = url
+    const currentDescription = description
+    const currentVideoInfo = videoInfo
+
+    const newJob: ProcessingJob = {
+      id: jobId,
+      status: "processing",
+      url: currentUrl,
+      platform: currentVideoInfo?.platform || "unknown",
+      title: currentVideoInfo?.title || "Processing...",
+      progress: 0,
+      message: "Starting...",
+      createdAt: new Date(),
+    }
+
+    setJobs((prev) => [newJob, ...prev])
+    setSelectedJobId(jobId)
+
+    // Clear inputs so user can add another video
+    setUrl("")
+    setDescription("")
+    setVideoInfo(null)
+
+    // Process asynchronously
+    const processAsync = async () => {
+      try {
+        const options: ProcessingOptions = {
+          url: currentUrl,
+          description: currentDescription,
+          reframe,
+          background_type: backgroundType,
+          background_color: backgroundColor,
+          apply_mirror: applyMirror,
+          apply_speed: applySpeed,
+          speed_factor: 1.02,
+          generate_subtitles: generateSubtitles,
+          subtitle_language: subtitleLanguage,
+          burn_subtitles: burnSubtitles,
+          auto_upload: autoUpload,
+        }
+
+        // Update progress
+        setJobs((prev) =>
+          prev.map((j) =>
+            j.id === jobId ? { ...j, progress: 30, message: "Downloading video..." } : j
+          )
+        )
+
+        const result = await api.processVideo(options)
+
+        if (result.success) {
+          setJobs((prev) =>
+            prev.map((j) =>
+              j.id === jobId
+                ? {
+                    ...j,
+                    status: "complete",
+                    progress: 100,
+                    message: "Completed!",
+                    result: {
+                      videoPath: result.data?.final_video,
+                      transcription: result.data?.transcription,
+                    },
+                  }
+                : j
+            )
+          )
+
+          if (result.data?.transcription) {
+            setTranscription(result.data.transcription)
+          }
+
+          showToast(`Video processed: ${currentVideoInfo?.title || 'Success'}`, "success")
+          fetchFiles()
+        } else {
+          throw new Error(result.error || "Processing failed")
+        }
+      } catch (error: any) {
+        setJobs((prev) =>
+          prev.map((j) =>
+            j.id === jobId
+              ? {
+                  ...j,
+                  status: "error",
+                  progress: 0,
+                  message: "Failed",
+                  error: error.message,
+                }
+              : j
+          )
+        )
+        showToast(error.message || "Processing failed", "error")
+      }
+    }
+
+    // Start processing without blocking
+    processAsync()
+
+  }, [url, description, videoInfo, reframe, backgroundType, backgroundColor, applyMirror, applySpeed, generateSubtitles, subtitleLanguage, burnSubtitles, showToast, fetchFiles, canAddMore])
+
+  // Clear all
+  const handleClearAll = useCallback(() => {
+    setUrl("")
+    setDescription("")
+    setVideoInfo(null)
+    setTranscription("")
+  }, [])
+
+  // Delete job
+  const handleDeleteJob = useCallback((id: string) => {
+    setJobs((prev) => prev.filter((j) => j.id !== id))
+    if (selectedJobId === id) {
+      setSelectedJobId(null)
+    }
+  }, [selectedJobId])
+
+  // Add video from Discover section
+  const handleAddFromDiscover = useCallback((videoUrl: string) => {
+    setUrl(videoUrl)
+    setActiveTab("process")
+    showToast("URL agregada. Haz click en Preview para ver info.", "success")
+  }, [showToast])
+
+  // Resizer handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault()
+    setIsResizing(true)
+  }, [])
+
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!isResizing || !containerRef.current) return
+      const container = containerRef.current
+      const containerRect = container.getBoundingClientRect()
+      const offsetX = e.clientX - containerRect.left
+      const percentage = (offsetX / containerRect.width) * 100
+      setLeftWidth(Math.max(30, Math.min(70, percentage)))
+    },
+    [isResizing]
+  )
+
+  const handleMouseUp = useCallback(() => {
+    setIsResizing(false)
+  }, [])
+
+  useEffect(() => {
+    if (isResizing) {
+      document.addEventListener("mousemove", handleMouseMove)
+      document.addEventListener("mouseup", handleMouseUp)
+      document.body.style.cursor = "col-resize"
+      document.body.style.userSelect = "none"
+
+      return () => {
+        document.removeEventListener("mousemove", handleMouseMove)
+        document.removeEventListener("mouseup", handleMouseUp)
+        document.body.style.cursor = ""
+        document.body.style.userSelect = ""
+      }
+    }
+  }, [isResizing, handleMouseMove, handleMouseUp])
+
+  return (
+    <div className="bg-background min-h-screen flex items-center justify-center select-none">
+      {toast && <ToastNotification message={toast.message} type={toast.type} />}
+
+      {/* Shader Background */}
+      <div className="fixed inset-0 z-0 select-none shader-background bg-black">
+        <MemoizedDithering
+          colorBack="#00000000"
+          colorFront="#5B005B"
+          speed={0.3}
+          shape="wave"
+          type="4x4"
+          pxSize={3}
+          scale={1.13}
+          style={{
+            backgroundColor: "#000000",
+            height: "100vh",
+            width: "100vw",
+          }}
+        />
+      </div>
+
+      {/* Main Content */}
+      <div className="relative z-10 w-full h-full flex items-center justify-center p-2 md:p-4">
+        <div className="w-full max-w-[98vw] lg:max-w-[96vw] 2xl:max-w-[94vw]">
+          <div className="w-full mx-auto select-none">
+            <div className="bg-black/70 border border-white/10 px-3 py-3 md:px-4 md:py-4 lg:px-6 lg:py-6 flex flex-col rounded-lg backdrop-blur-sm">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4 mb-4 md:mb-6 flex-shrink-0">
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <Zap className="w-6 h-6 md:w-7 md:h-7 text-purple-500" />
+                    <h1 className="text-lg md:text-2xl font-bold text-white select-none leading-none">
+                      <span className="hidden md:inline">Viral Content Automation</span>
+                      <span className="md:hidden">Viral Auto</span>
+                    </h1>
+                  </div>
+                  <p className="text-[9px] md:text-[11px] text-gray-400 select-none tracking-wide">
+                    TikTok • Instagram • YouTube • Facebook
+                  </p>
+                </div>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <span className="hidden md:inline">
+                    {downloadedFiles.length} downloaded • {processedFiles.length} processed
+                  </span>
+                </div>
+              </div>
+
+              {/* Tab Navigation */}
+              <div className="flex gap-1 mb-4 border-b border-white/10 pb-3">
+                <button
+                  onClick={() => setActiveTab("process")}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all",
+                    activeTab === "process"
+                      ? "bg-white text-black"
+                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  <Video className="size-4" />
+                  Procesar
+                </button>
+                <button
+                  onClick={() => setActiveTab("discover")}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 text-sm font-medium transition-all",
+                    activeTab === "discover"
+                      ? "bg-white text-black"
+                      : "text-gray-400 hover:text-white hover:bg-white/5"
+                  )}
+                >
+                  <Compass className="size-4" />
+                  Descubrir
+                </button>
+              </div>
+
+              {/* Main Layout */}
+              {activeTab === "process" ? (
+                <div className="flex flex-col gap-4 xl:gap-0">
+                  <div
+                    ref={containerRef}
+                    className="flex flex-col xl:flex-row gap-4 xl:gap-0 xl:min-h-[60vh] 2xl:min-h-[62vh]"
+                  >
+                    {/* Input Section */}
+                    <div
+                      className="flex flex-col xl:pr-4 xl:border-r xl:border-white/10 flex-shrink-0 xl:overflow-y-auto xl:max-h-[80vh]"
+                      style={{ width: isLargeScreen ? `${leftWidth}%` : "100%" }}
+                    >
+                      <InputSection
+                        url={url}
+                        setUrl={setUrl}
+                        description={description}
+                        setDescription={setDescription}
+                        videoInfo={videoInfo}
+                        previewLoading={previewLoading}
+                        reframe={reframe}
+                        setReframe={setReframe}
+                        backgroundType={backgroundType}
+                        setBackgroundType={setBackgroundType}
+                        backgroundColor={backgroundColor}
+                        setBackgroundColor={setBackgroundColor}
+                        applyMirror={applyMirror}
+                        setApplyMirror={setApplyMirror}
+                        applySpeed={applySpeed}
+                        setApplySpeed={setApplySpeed}
+                        generateSubtitles={generateSubtitles}
+                        setGenerateSubtitles={setGenerateSubtitles}
+                        subtitleLanguage={subtitleLanguage}
+                        setSubtitleLanguage={setSubtitleLanguage}
+                        burnSubtitles={burnSubtitles}
+                        setBurnSubtitles={setBurnSubtitles}
+                        isProcessing={isProcessing}
+                        processingCount={processingCount}
+                        onPreview={handlePreview}
+                        onProcess={handleProcess}
+                        onClearAll={handleClearAll}
+                      />
+
+                      {/* Desktop History */}
+                      <div className="hidden xl:block mt-4 flex-shrink-0">
+                        <ProcessingHistory
+                          jobs={jobs}
+                          selectedId={selectedJobId}
+                          onSelect={setSelectedJobId}
+                          onDelete={handleDeleteJob}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Resizer */}
+                    <div
+                      className="hidden xl:flex items-center justify-center cursor-col-resize hover:bg-white/10 transition-colors relative group"
+                      style={{ width: "8px", flexShrink: 0 }}
+                      onMouseDown={handleMouseDown}
+                      onDoubleClick={() => setLeftWidth(50)}
+                    >
+                      <div className="w-0.5 h-8 bg-white/20 group-hover:bg-white/40 transition-colors rounded-full" />
+                    </div>
+
+                    {/* Output Section */}
+                    <div
+                      className="flex flex-col xl:pl-4 min-h-[400px] xl:min-h-0 flex-shrink-0"
+                      style={{ width: isLargeScreen ? `${100 - leftWidth}%` : "100%" }}
+                    >
+                      <OutputSection
+                        selectedJob={selectedJob}
+                        transcription={transcription}
+                        setTranscription={setTranscription}
+                        downloadedFiles={downloadedFiles}
+                        processedFiles={processedFiles}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Mobile History */}
+                  <div className="xl:hidden flex-shrink-0">
+                    <ProcessingHistory
+                      jobs={jobs}
+                      selectedId={selectedJobId}
+                      onSelect={setSelectedJobId}
+                      onDelete={handleDeleteJob}
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="min-h-[60vh] 2xl:min-h-[62vh]">
+                  <DiscoverSection onAddToQueue={handleAddFromDiscover} />
+                </div>
+              )}
+
+              {/* Footer */}
+              <div className="mt-4 border-t border-white/10 pt-4 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-xs text-white/40 flex-shrink-0">
+                <span>Powered by Whisper AI + FFmpeg + Playwright</span>
+                <span className="text-white/20 hidden sm:inline">•</span>
+                <span>FastAPI Backend</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default ViralAutomation

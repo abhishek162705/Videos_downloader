@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  # Backend API (FastAPI)
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: viral-automation-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./downloads:/app/downloads
+      - ./processed:/app/processed
+      - ./cookies:/app/cookies
+      - ./cache:/app/cache
+      - ./automation.db:/app/automation.db
+      - ./analytics.db:/app/analytics.db
+      - ./queue.db:/app/queue.db
+      - ./hashtags.db:/app/hashtags.db
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - WHISPER_MODEL_SIZE=base
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/info"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - viral-network
+
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: viral-automation-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+      - NODE_ENV=production
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - viral-network
+
+  # Redis para caché (opcional pero recomendado)
+  redis:
+    image: redis:7-alpine
+    container_name: viral-automation-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    networks:
+      - viral-network
+
+  # Servicio de backup automático
+  backup:
+    image: alpine:latest
+    container_name: viral-automation-backup
+    volumes:
+      - ./:/app
+      - ./backups:/backups
+    entrypoint: /bin/sh
+    command: >
+      -c "
+      while true; do
+        echo 'Running backup...'
+        mkdir -p /backups/$$(date +%Y%m%d)
+        cp /app/*.db /backups/$$(date +%Y%m%d)/ 2>/dev/null || true
+        cp -r /app/cookies /backups/$$(date +%Y%m%d)/ 2>/dev/null || true
+        # Mantener solo los últimos 7 días de backups
+        find /backups -type d -mtime +7 -exec rm -rf {} + 2>/dev/null || true
+        echo 'Backup completed at' $$(date)
+        sleep 86400
+      done
+      "
+    restart: unless-stopped
+    networks:
+      - viral-network
+
+networks:
+  viral-network:
+    driver: bridge
+
+volumes:
+  redis-data:

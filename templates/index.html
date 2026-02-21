@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viral Content Automation Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <i class="fas fa-bolt text-3xl"></i>
+                    <h1 class="text-2xl font-bold">Viral Content Automation</h1>
+                </div>
+                <button id="clearSessionBtn" class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg transition">
+                    <i class="fas fa-sign-out-alt mr-2"></i>Clear Session
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-6 py-8 max-w-6xl">
+
+        <!-- Status Alert -->
+        <div id="statusAlert" class="hidden mb-6 p-4 rounded-lg"></div>
+
+        <!-- Main Card -->
+        <div class="bg-white rounded-2xl shadow-xl p-8 mb-6">
+            <h2 class="text-2xl font-bold mb-6 text-gray-800">
+                <i class="fas fa-magic mr-2 text-purple-600"></i>Procesar Video
+            </h2>
+
+            <!-- URL Input -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-link mr-2"></i>URL del Video
+                </label>
+                <div class="flex gap-2">
+                    <input
+                        type="text"
+                        id="videoUrl"
+                        placeholder="https://tiktok.com/@user/video/..."
+                        class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                    />
+                    <button id="previewBtn" class="bg-gray-200 hover:bg-gray-300 px-6 py-3 rounded-lg transition font-semibold">
+                        <i class="fas fa-eye mr-2"></i>Preview
+                    </button>
+                </div>
+                <p class="text-sm text-gray-500 mt-2">
+                    Soporta: TikTok, Instagram Reels, YouTube Shorts, Facebook Watch
+                </p>
+            </div>
+
+            <!-- Video Preview -->
+            <div id="videoPreview" class="hidden mb-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 class="font-semibold text-blue-900 mb-2">Preview del Video</h3>
+                <div id="previewContent" class="text-sm text-gray-700"></div>
+            </div>
+
+            <!-- Processing Options -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+
+                <!-- Left Column -->
+                <div class="space-y-4">
+                    <h3 class="font-semibold text-gray-700 text-lg">
+                        <i class="fas fa-sliders-h mr-2"></i>Opciones de Video
+                    </h3>
+
+                    <!-- Reframe Option -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <label class="font-medium text-gray-700">Re-enmarcar a 9:16</label>
+                            <p class="text-xs text-gray-500">Ajusta el video a formato vertical</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="reframeCheck" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+
+                    <!-- Background Type -->
+                    <div class="p-4 bg-gray-50 rounded-lg" id="backgroundOptions">
+                        <label class="block font-medium text-gray-700 mb-2">Tipo de Fondo</label>
+                        <select id="backgroundType" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                            <option value="blur">Fondo Desenfocado</option>
+                            <option value="solid">Color Sólido</option>
+                        </select>
+                        <div id="colorPickerDiv" class="hidden mt-2">
+                            <input type="color" id="backgroundColor" value="#000000" class="w-full h-10 rounded cursor-pointer">
+                        </div>
+                    </div>
+
+                    <!-- Mirror Effect -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <label class="font-medium text-gray-700">Efecto Espejo</label>
+                            <p class="text-xs text-gray-500">Voltea el video horizontalmente</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="mirrorCheck" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+
+                    <!-- Speed Change -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <label class="font-medium text-gray-700">Cambiar Velocidad</label>
+                            <p class="text-xs text-gray-500">Acelera 2% para evadir copyright</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="speedCheck" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-4">
+                    <h3 class="font-semibold text-gray-700 text-lg">
+                        <i class="fas fa-closed-captioning mr-2"></i>Opciones de Subtítulos
+                    </h3>
+
+                    <!-- Generate Subtitles -->
+                    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                        <div>
+                            <label class="font-medium text-gray-700">Generar Subtítulos (Whisper AI)</label>
+                            <p class="text-xs text-gray-500">Transcribe automáticamente el audio</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="subtitlesCheck" class="sr-only peer" checked>
+                            <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        </label>
+                    </div>
+
+                    <!-- Language Selection -->
+                    <div id="subtitleOptions" class="space-y-4">
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <label class="block font-medium text-gray-700 mb-2">Idioma del Audio</label>
+                            <select id="subtitleLanguage" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500">
+                                <option value="es">Español</option>
+                                <option value="en">English</option>
+                                <option value="fr">Français</option>
+                                <option value="de">Deutsch</option>
+                                <option value="it">Italiano</option>
+                                <option value="pt">Português</option>
+                            </select>
+                        </div>
+
+                        <!-- Burn Subtitles -->
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <label class="font-medium text-gray-700">Quemar Subtítulos</label>
+                                <p class="text-xs text-gray-500">Incrustar permanentemente en el video</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="burnSubsCheck" class="sr-only peer" checked>
+                                <div class="w-11 h-6 bg-gray-300 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-6">
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                    <i class="fas fa-align-left mr-2"></i>Descripción para TikTok
+                </label>
+                <textarea
+                    id="videoDescription"
+                    rows="3"
+                    placeholder="Escribe una descripción viral con hashtags..."
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none"
+                ></textarea>
+            </div>
+
+            <!-- Transcription Preview -->
+            <div id="transcriptionPreview" class="hidden mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="font-semibold text-yellow-900">
+                        <i class="fas fa-file-alt mr-2"></i>Transcripción del Video
+                    </h3>
+                    <button id="editTranscriptionBtn" class="text-sm text-blue-600 hover:text-blue-800">
+                        <i class="fas fa-edit mr-1"></i>Editar
+                    </button>
+                </div>
+                <div id="transcriptionContent" class="text-sm text-gray-700 whitespace-pre-wrap"></div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap gap-4">
+                <button id="processBtn" class="flex-1 gradient-bg text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
+                    <i class="fas fa-cogs mr-2"></i>Procesar Video
+                </button>
+                <button id="processAndUploadBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-lg font-bold text-lg hover:shadow-lg transition transform hover:scale-105">
+                    <i class="fas fa-upload mr-2"></i>Procesar y Subir a TikTok
+                </button>
+            </div>
+
+            <!-- Progress Bar -->
+            <div id="progressSection" class="hidden mt-6">
+                <div class="bg-gray-200 rounded-full h-4 overflow-hidden">
+                    <div id="progressBar" class="gradient-bg h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <p id="progressText" class="text-center text-sm text-gray-600 mt-2"></p>
+            </div>
+        </div>
+
+        <!-- Files Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Downloaded Files -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold mb-4 text-gray-800">
+                    <i class="fas fa-download mr-2 text-blue-600"></i>Videos Descargados
+                </h3>
+                <div id="downloadedFiles" class="space-y-2 max-h-64 overflow-y-auto">
+                    <p class="text-gray-500 text-sm">No hay archivos</p>
+                </div>
+            </div>
+
+            <!-- Processed Files -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h3 class="text-lg font-bold mb-4 text-gray-800">
+                    <i class="fas fa-check-circle mr-2 text-green-600"></i>Videos Procesados
+                </h3>
+                <div id="processedFiles" class="space-y-2 max-h-64 overflow-y-auto">
+                    <p class="text-gray-500 text-sm">No hay archivos</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        // Estado de la aplicación
+        let currentTaskId = null;
+
+        // Elementos del DOM
+        const videoUrl = document.getElementById('videoUrl');
+        const previewBtn = document.getElementById('previewBtn');
+        const videoPreview = document.getElementById('videoPreview');
+        const previewContent = document.getElementById('previewContent');
+        const processBtn = document.getElementById('processBtn');
+        const processAndUploadBtn = document.getElementById('processAndUploadBtn');
+        const statusAlert = document.getElementById('statusAlert');
+        const progressSection = document.getElementById('progressSection');
+        const progressBar = document.getElementById('progressBar');
+        const progressText = document.getElementById('progressText');
+        const clearSessionBtn = document.getElementById('clearSessionBtn');
+        const backgroundType = document.getElementById('backgroundType');
+        const colorPickerDiv = document.getElementById('colorPickerDiv');
+        const subtitlesCheck = document.getElementById('subtitlesCheck');
+        const subtitleOptions = document.getElementById('subtitleOptions');
+        const reframeCheck = document.getElementById('reframeCheck');
+        const backgroundOptions = document.getElementById('backgroundOptions');
+
+        // Toggle color picker
+        backgroundType.addEventListener('change', () => {
+            colorPickerDiv.classList.toggle('hidden', backgroundType.value !== 'solid');
+        });
+
+        // Toggle subtitle options
+        subtitlesCheck.addEventListener('change', () => {
+            subtitleOptions.classList.toggle('hidden', !subtitlesCheck.checked);
+        });
+
+        // Toggle background options
+        reframeCheck.addEventListener('change', () => {
+            backgroundOptions.classList.toggle('hidden', !reframeCheck.checked);
+        });
+
+        // Show alert
+        function showAlert(message, type = 'info') {
+            const colors = {
+                info: 'bg-blue-100 text-blue-800 border-blue-300',
+                success: 'bg-green-100 text-green-800 border-green-300',
+                error: 'bg-red-100 text-red-800 border-red-300',
+                warning: 'bg-yellow-100 text-yellow-800 border-yellow-300'
+            };
+
+            statusAlert.className = `mb-6 p-4 rounded-lg border ${colors[type]}`;
+            statusAlert.textContent = message;
+            statusAlert.classList.remove('hidden');
+
+            setTimeout(() => {
+                statusAlert.classList.add('hidden');
+            }, 5000);
+        }
+
+        // Show progress
+        function showProgress(percent, text) {
+            progressSection.classList.remove('hidden');
+            progressBar.style.width = `${percent}%`;
+            progressText.textContent = text;
+        }
+
+        function hideProgress() {
+            progressSection.classList.add('hidden');
+            progressBar.style.width = '0%';
+        }
+
+        // Preview video
+        previewBtn.addEventListener('click', async () => {
+            const url = videoUrl.value.trim();
+            if (!url) {
+                showAlert('Por favor ingresa una URL', 'warning');
+                return;
+            }
+
+            previewBtn.disabled = true;
+            previewBtn.innerHTML = '<i class="fas fa-spinner spinner mr-2"></i>Cargando...';
+
+            try {
+                const response = await fetch(`/api/video-info?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    previewContent.innerHTML = `
+                        <p><strong>Título:</strong> ${data.title}</p>
+                        <p><strong>Plataforma:</strong> ${data.platform}</p>
+                        <p><strong>Duración:</strong> ${Math.floor(data.duration / 60)}:${(data.duration % 60).toString().padStart(2, '0')}</p>
+                        <p><strong>Resolución:</strong> ${data.width}x${data.height}</p>
+                        <p><strong>Autor:</strong> ${data.uploader}</p>
+                    `;
+                    videoPreview.classList.remove('hidden');
+                } else {
+                    showAlert('No se pudo obtener información del video', 'error');
+                }
+            } catch (error) {
+                showAlert('Error al obtener información: ' + error.message, 'error');
+            } finally {
+                previewBtn.disabled = false;
+                previewBtn.innerHTML = '<i class="fas fa-eye mr-2"></i>Preview';
+            }
+        });
+
+        // Process video
+        processBtn.addEventListener('click', () => processVideo(false));
+        processAndUploadBtn.addEventListener('click', () => processVideo(true));
+
+        async function processVideo(autoUpload) {
+            const url = videoUrl.value.trim();
+            if (!url) {
+                showAlert('Por favor ingresa una URL', 'warning');
+                return;
+            }
+
+            const description = document.getElementById('videoDescription').value.trim();
+            if (autoUpload && !description) {
+                showAlert('Por favor ingresa una descripción para TikTok', 'warning');
+                return;
+            }
+
+            processBtn.disabled = true;
+            processAndUploadBtn.disabled = true;
+            showProgress(10, 'Iniciando proceso...');
+
+            try {
+                const requestData = {
+                    url: url,
+                    description: description,
+                    reframe: document.getElementById('reframeCheck').checked,
+                    background_type: backgroundType.value,
+                    background_color: document.getElementById('backgroundColor').value,
+                    apply_mirror: document.getElementById('mirrorCheck').checked,
+                    apply_speed: document.getElementById('speedCheck').checked,
+                    speed_factor: 1.02,
+                    generate_subtitles: subtitlesCheck.checked,
+                    subtitle_language: document.getElementById('subtitleLanguage').value,
+                    burn_subtitles: document.getElementById('burnSubsCheck').checked,
+                    auto_upload: autoUpload
+                };
+
+                showProgress(30, 'Procesando video...');
+
+                const response = await fetch('/api/complete-flow', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestData)
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showProgress(100, 'Completado!');
+                    showAlert('Video procesado exitosamente!', 'success');
+
+                    if (data.data.transcription) {
+                        document.getElementById('transcriptionContent').textContent = data.data.transcription;
+                        document.getElementById('transcriptionPreview').classList.remove('hidden');
+                    }
+
+                    // Refresh file lists
+                    loadFiles();
+
+                    setTimeout(hideProgress, 2000);
+                } else {
+                    showAlert('Error: ' + (data.detail || 'Unknown error'), 'error');
+                    hideProgress();
+                }
+            } catch (error) {
+                showAlert('Error: ' + error.message, 'error');
+                hideProgress();
+            } finally {
+                processBtn.disabled = false;
+                processAndUploadBtn.disabled = false;
+            }
+        }
+
+        // Clear session
+        clearSessionBtn.addEventListener('click', async () => {
+            if (!confirm('¿Estás seguro de que quieres cerrar la sesión de TikTok?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/clear-session', { method: 'DELETE' });
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert('Sesión cerrada exitosamente', 'success');
+                }
+            } catch (error) {
+                showAlert('Error al cerrar sesión: ' + error.message, 'error');
+            }
+        });
+
+        // Load files
+        async function loadFiles() {
+            try {
+                // Load downloaded files
+                const downloadedResponse = await fetch('/api/files/downloads');
+                const downloadedData = await downloadedResponse.json();
+                const downloadedFiles = document.getElementById('downloadedFiles');
+
+                if (downloadedData.files.length > 0) {
+                    downloadedFiles.innerHTML = downloadedData.files.map(file => `
+                        <div class="p-2 bg-gray-50 rounded text-sm">
+                            <i class="fas fa-file-video mr-2 text-blue-500"></i>${file.name}
+                        </div>
+                    `).join('');
+                } else {
+                    downloadedFiles.innerHTML = '<p class="text-gray-500 text-sm">No hay archivos</p>';
+                }
+
+                // Load processed files
+                const processedResponse = await fetch('/api/files/processed');
+                const processedData = await processedResponse.json();
+                const processedFilesEl = document.getElementById('processedFiles');
+
+                if (processedData.files.length > 0) {
+                    processedFilesEl.innerHTML = processedData.files.map(file => `
+                        <div class="p-2 bg-gray-50 rounded text-sm">
+                            <i class="fas fa-check-circle mr-2 text-green-500"></i>${file.name}
+                        </div>
+                    `).join('');
+                } else {
+                    processedFilesEl.innerHTML = '<p class="text-gray-500 text-sm">No hay archivos</p>';
+                }
+            } catch (error) {
+                console.error('Error loading files:', error);
+            }
+        }
+
+        // Load files on page load
+        loadFiles();
+
+        // Refresh files every 10 seconds
+        setInterval(loadFiles, 10000);
+    </script>
+</body>
+</html>
